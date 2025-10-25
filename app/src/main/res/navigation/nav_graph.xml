@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/tourListFragment"
-        android:name="com.itanes.tours.tourlist.TourListFragment"
+        android:name="com.example.proyectofinal_itanestours.ui.main.TourListFragment"
         android:label="Itanes Tours"
         tools:layout="@layout/fragment_tour_list" >
 
