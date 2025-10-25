@@ -35,6 +35,10 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+
+    buildFeatures {
+        viewBinding = true
+    }
 }
 
 dependencies {
@@ -84,4 +88,6 @@ dependencies {
 
     // --- Sincronización en Segundo Plano (WorkManager) ---
     implementation("androidx.work:work-runtime-ktx:2.9.0")
+
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 }

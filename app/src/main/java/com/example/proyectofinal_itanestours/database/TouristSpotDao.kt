@@ -4,11 +4,12 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface UserDao {
+interface TouristSpotDao {
+
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAllSpots(spots: List<TouristSpot>)
 
@@ -16,14 +17,15 @@ interface UserDao {
     fun getSpotsByTour(tourId: String): Flow<List<TouristSpot>>
 
     @Query("SELECT * FROM tourist_spots WHERE spotId = :spotId")
-    suspend fun getSpotById(spotId: String): Flow<TouristSpot>
+    fun getSpotById(spotId: String): Flow<TouristSpot>
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE) // Ignora si ya es favorito
     suspend fun addFavorite(favorite: Favorite)
 
     @Query("DELETE FROM favorites WHERE spotId = :spotId")
     suspend fun removeFavorite(spotId: String)
 
-    @Query("SELECT * FROM favorites")
-    fun getFavoritesSpotIds(): Flow<List<String>>
+
+    @Query("SELECT spotId FROM favorites")
+    fun getFavoriteSpotIds(): Flow<List<String>>
 }
