@@ -11,6 +11,23 @@
         android:label="Itanes Tours"
         tools:layout="@layout/fragment_tour_list" >
 
+        <action
+            android:id="@+id/action_tourListFragment_to_spotDetailFragment"
+            app:destination="@id/spotDetailFragment" />
+
     </fragment>
+
+    <fragment
+        android:id="@+id/spotDetailFragment"
+        android:name="com.example.proyectofinal_itanestours.ui.detail.SpotDetailFragment"
+        android:label="fragment_spot_detail"
+        tools:layout="@layout/fragment_spot_detail" >
+
+        <!-- THIS IS THE CRUCIAL PART -->
+        <argument
+            android:name="spotId"
+            app:argType="string"/>
+    </fragment>
+
 
 </navigation>

@@ -15,6 +15,7 @@ import com.example.proyectofinal_itanestours.ItanesApp
 import com.example.proyectofinal_itanestours.databinding.FragmentTourListBinding // <-- Importa el ViewBinding
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import androidx.navigation.fragment.findNavController
 
 class TourListFragment : Fragment() {
 
@@ -62,16 +63,15 @@ class TourListFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        // Inicializa el adaptador con las acciones de click
         spotAdapter = TouristSpotAdapter(
             onFavoriteClicked = { spot, _ ->
-                // Acción 1: El usuario pulsó la estrella
                 viewModel.toggleFavorite(spot.spotId)
             },
             onItemClicked = { spot ->
-                // Acción 2: El usuario pulsó la tarjeta
-                // TODO: Navegar a la pantalla de detalle
-                Toast.makeText(context, "Ver detalle de ${spot.name}", Toast.LENGTH_SHORT).show()
+
+                val action = TourListFragmentDirections
+                    .actionTourListFragmentToSpotDetailFragment(spot.spotId)
+                findNavController().navigate(action)
             }
         )
 

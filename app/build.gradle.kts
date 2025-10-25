@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     id("kotlin-kapt") // <-- AÑADE ESTA LÍNEA
+    alias(libs.plugins.android.navigation.safeargs)
 }
 
 android {
@@ -70,8 +71,7 @@ dependencies {
     // --- Room (Base de Datos Local)  ---
     val roomVersion = "2.6.1"
     implementation("androidx.room:room-runtime:$roomVersion")
-    annotationProcessor("androidx.room:room-compiler:$roomVersion")
-    // Opcional: Soporte de Coroutines para Room
+    kapt("androidx.room:room-compiler:$roomVersion") // <-- ASÍ DEBE SER
     implementation("androidx.room:room-ktx:$roomVersion")
     // Para usar KSP en lugar de KAPT (recomendado)
     // ksp("androidx.room:room-compiler:$roomVersion")
@@ -91,6 +91,8 @@ dependencies {
     implementation("androidx.work:work-runtime-ktx:2.9.0")
 
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+    implementation("org.osmdroid:osmdroid-android:6.1.18")
+    implementation("androidx.preference:preference-ktx:1.2.1")
 }
 
 
