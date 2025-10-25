@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    id("kotlin-kapt") // <-- AÑADE ESTA LÍNEA
 }
 
 android {
@@ -91,3 +92,5 @@ dependencies {
 
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 }
+
+

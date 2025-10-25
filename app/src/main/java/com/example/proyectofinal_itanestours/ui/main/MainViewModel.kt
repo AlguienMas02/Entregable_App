@@ -10,6 +10,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flowOn
 
 // Definimos un estado para la UI, que contendrá la lista de spots
 // y la información de cuáles son favoritos.
@@ -21,16 +23,13 @@ data class UiState(
 class MainViewModel(private val repository: TouristSpotRepository) : ViewModel() {
 
     // --- ID del Tour que estamos viendo ---
-    // Usaremos el de "lima_centro" que creamos en la API de Mocki
     private val tourId = "lima_centro"
 
     // --- Flujo de datos desde el Repositorio ---
     // Obtenemos el Flow de los Puntos Turísticos
-    private val spotsFlow = repository.getSpotsByTour(tourId)
-
+    private val spotsFlow = repository.getSpotsByTour(tourId).flowOn(Dispatchers.IO)
     // Obtenemos el Flow de los IDs Favoritos
-    private val favoritesFlow = repository.getFavoriteSpotIds()
-
+    private val favoritesFlow = repository.getFavoriteSpotIds().flowOn(Dispatchers.IO)
     /**
      * Exponemos el estado de la UI (UiState).
      * Usamos 'combine' para mezclar los datos de spotsFlow y favoritesFlow.
@@ -51,9 +50,7 @@ class MainViewModel(private val repository: TouristSpotRepository) : ViewModel()
      * Se debe llamar al iniciar la app o en un "pull-to-refresh".
      */
     fun refreshData() {
-        // Lanzamos una corutina en el 'viewModelScope'
-        // Este 'scope' se cancela automáticamente cuando el ViewModel se destruye.
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) { // <-- Añade (Dispatchers.IO) aquí
             repository.refreshSpots()
         }
     }
@@ -62,12 +59,10 @@ class MainViewModel(private val repository: TouristSpotRepository) : ViewModel()
      * Marca o desmarca un punto como favorito.
      */
     fun toggleFavorite(spotId: String) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) { // <-- Añade (Dispatchers.IO) aquí
             if (uiState.value.favoriteSpotIds.contains(spotId)) {
-                // Ya es favorito, lo quitamos
                 repository.removeFavorite(spotId)
             } else {
-                // No es favorito, lo añadimos
                 repository.addFavorite(Favorite(spotId = spotId))
             }
         }

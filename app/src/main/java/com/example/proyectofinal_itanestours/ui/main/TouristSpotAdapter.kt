@@ -78,14 +78,8 @@ class TouristSpotAdapter(
         val spot = getItem(position)
 
         // --- Lógica para saber si este ítem es favorito ---
-        // Esto es un truco, ya que el Adapter no conoce el ViewModel.
-        // Hacemos que el ViewModel nos pase un set de IDs favoritos.
-        // *Actualización:* ¡Esto lo manejaremos en el Fragment!
-        // Por ahora, pasaremos el set de favoritos al adapter.
-
-        // (Dejaremos esta lógica para el Fragment, que es quien tiene
-        // acceso al ViewModel. Por ahora, asumimos que no es favorito)
-        holder.bind(spot, false) // <-- Esto lo mejoraremos en el siguiente paso
+        val isFavorite = favoriteIds.contains(spot.spotId)
+        holder.bind(spot, isFavorite)
     }
 
     // --- Necesitamos una forma de pasar la lista de favoritos al Adapter ---
@@ -98,12 +92,7 @@ class TouristSpotAdapter(
         notifyDataSetChanged()
     }
 
-    // Sobreescribimos onBindViewHolder para usar la lista de favoritos
-    override fun onBindViewHolder(holder: SpotViewHolder, position: Int, payloads: MutableList<Any>) {
-        val spot = getItem(position)
-        val isFavorite = favoriteIds.contains(spot.spotId)
-        holder.bind(spot, isFavorite)
-    }
+
 
     /**
      * DiffUtil: Le dice al Adapter cómo calcular las diferencias

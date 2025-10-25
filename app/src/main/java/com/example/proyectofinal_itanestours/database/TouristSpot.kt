@@ -5,7 +5,7 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "tourist_spots")
 data class TouristSpot(
-    @PrimaryKey(autoGenerate = true)
+    @PrimaryKey
     val spotId: String,
     val tourId: String,
     val name: String,
