@@ -95,7 +95,6 @@ class SpotDetailFragment : Fragment() {
         checkLocationPermission()
         setupDirectionsButton()
 
-        binding.buttonGetDirections.isEnabled = false
 
         observeSpotDetails()
         observeFavoriteStatus()
@@ -104,12 +103,23 @@ class SpotDetailFragment : Fragment() {
     private fun observeSpotDetails() {
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                // Observa el spot específico
+                // Observa el spot (que puede ser nulo)
                 detailViewModel.spot.collectLatest { spot ->
+                    // Actualiza la variable currentSpot CADA VEZ que el Flow emite
+                    currentSpot = spot
+
                     if (spot != null) {
+                        // Si tenemos datos, actualiza la UI y activa el botón
                         bindSpotData(spot)
                         setupMapLocation(spot)
                         binding.buttonGetDirections.isEnabled = true
+                        Log.d("SpotDetailFragment", "Spot cargado: ${spot.name}") // Log para confirmar
+                    } else {
+                        // Si es nulo (estado inicial o no encontrado),
+                        // MANTÉN el botón desactivado.
+                        binding.buttonGetDirections.isEnabled = false
+                        Log.d("SpotDetailFragment", "Spot es null (esperando datos...)") // Log para confirmar
+                        // Opcional: podrías mostrar un ProgressBar aquí
                     }
                 }
             }

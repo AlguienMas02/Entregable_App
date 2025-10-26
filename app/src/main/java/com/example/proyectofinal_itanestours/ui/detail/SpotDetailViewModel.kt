@@ -16,24 +16,25 @@ class SpotDetailViewModel(
     spotId: String
 ) : ViewModel() {
 
-    // Exponemos un Flow que observa solo el Spot solicitado
+    // --- CÓDIGO SIMPLIFICADO ---
+    // Directamente exponemos el Flow del repositorio.
+    // Este Flow emitirá null si no encuentra el spot, y luego
+    // emitirá el TouristSpot cuando esté disponible en la BD.
     val spot: StateFlow<TouristSpot?> = repository.getSpotById(spotId)
         .flowOn(Dispatchers.IO) // Corre la consulta en un hilo de fondo
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = null // Valor inicial nulo mientras carga
+            initialValue = null // El valor inicial es null
         )
+    // --- FIN CÓDIGO SIMPLIFICADO ---
 }
 
-/**
- * Factory para poder pasar el Repositorio y el spotId al ViewModel
- */
+// La Factory no cambia
 class SpotDetailViewModelFactory(
     private val repository: TouristSpotRepository,
     private val spotId: String
 ) : ViewModelProvider.Factory {
-
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(SpotDetailViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
