@@ -32,6 +32,9 @@ import androidx.core.content.ContextCompat
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 import org.osmdroid.views.overlay.Marker
+import android.content.ActivityNotFoundException
+import android.util.Log
+import android.widget.Toast
 
 
 class SpotDetailFragment : Fragment() {
@@ -92,6 +95,8 @@ class SpotDetailFragment : Fragment() {
         checkLocationPermission()
         setupDirectionsButton()
 
+        binding.buttonGetDirections.isEnabled = false
+
         observeSpotDetails()
         observeFavoriteStatus()
     }
@@ -104,6 +109,7 @@ class SpotDetailFragment : Fragment() {
                     if (spot != null) {
                         bindSpotData(spot)
                         setupMapLocation(spot)
+                        binding.buttonGetDirections.isEnabled = true
                     }
                 }
             }
@@ -169,24 +175,64 @@ class SpotDetailFragment : Fragment() {
 
     private fun setupDirectionsButton() {
         binding.buttonGetDirections.setOnClickListener {
-            currentSpot?.let { spot ->
-                // Crea un Intent para Google Maps (Navegación)
-                val gmmIntentUri =
-                    Uri.parse("google.navigation:q=${spot.latitude},${spot.longitude}")
-                val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
-                mapIntent.setPackage("com.google.android.apps.maps") // Fuerza que se abra en Google Maps
+            Log.d("SpotDetailFragment", "Botón 'Cómo llegar' presionado.")
 
-                // Comprueba si Google Maps está instalado
+            // --- ¡LA COMPROBACIÓN MÁS IMPORTANTE VA PRIMERO! ---
+            if (currentSpot == null) {
+                Log.e("SpotDetailFragment", "El Spot no se ha cargado todavía (clic rápido).")
+                Toast.makeText(
+                    context,
+                    "Datos aún cargando, espera un segundo.",
+                    Toast.LENGTH_SHORT
+                ).show()
+                return@setOnClickListener // Detiene la ejecución aquí si no hay datos
+            }
+            // --- FIN DE LA COMPROBACIÓN ---
+
+            Log.d(
+                "SpotDetailFragment",
+                "currentSpot no es nulo."
+            ) // Este log ahora debería aparecer siempre
+
+            val spot = currentSpot!! // Ahora es seguro usar !!
+            val spotLat = spot.latitude
+            val spotLng = spot.longitude
+            Log.d("SpotDetailFragment", "Coordenadas: Lat=$spotLat, Lng=$spotLng")
+
+            try {
+                Log.d("SpotDetailFragment", "Intentando Intent a Google Maps (Navegación)...")
+                val gmmIntentUri = Uri.parse("google.navigation:q=$spotLat,$spotLng&mode=d")
+                val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
+                mapIntent.setPackage("com.google.android.apps.maps")
+
                 if (mapIntent.resolveActivity(requireActivity().packageManager) != null) {
+                    Log.d("SpotDetailFragment", "Google Maps encontrado. Lanzando Intent...")
                     startActivity(mapIntent)
+                    Log.d("SpotDetailFragment", "Intent a Google Maps lanzado.")
                 } else {
-                    // Si no, abre en el navegador
-                    val browserIntent = Intent(
-                        Intent.ACTION_VIEW,
-                        Uri.parse("https://www.google.com/maps/dir/?api=1&destination=${spot.latitude},${spot.longitude}")
+                    Log.d(
+                        "SpotDetailFragment",
+                        "Google Maps NO encontrado. Intentando navegador..."
                     )
+                    // URL Corregida para trazar ruta en web
+                    val browserIntentUri = Uri.parse(
+                        "https://www.google.com/maps/dir/?api=1&destination=$($spotLat),$spotLng"
+                    )
+                    val browserIntent = Intent(Intent.ACTION_VIEW, browserIntentUri)
                     startActivity(browserIntent)
+                    Log.d("SpotDetailFragment", "Intent a navegador lanzado.")
                 }
+            } catch (e: ActivityNotFoundException) {
+                Log.e(
+                    "SpotDetailFragment",
+                    "ActivityNotFoundException: No se pudo abrir ningún mapa.",
+                    e
+                )
+                Toast.makeText(context, "No se encontró una app de mapas.", Toast.LENGTH_SHORT)
+                    .show()
+            } catch (e: Exception) {
+                Log.e("SpotDetailFragment", "Excepción inesperada al lanzar Intent.", e)
+                Toast.makeText(context, "Error al intentar abrir mapas.", Toast.LENGTH_SHORT).show()
             }
         }
     }

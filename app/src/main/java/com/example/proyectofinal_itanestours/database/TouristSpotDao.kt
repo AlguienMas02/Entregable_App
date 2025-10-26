@@ -17,8 +17,7 @@ interface TouristSpotDao {
     fun getSpotsByTour(tourId: String): Flow<List<TouristSpot>>
 
     @Query("SELECT * FROM tourist_spots WHERE spotId = :spotId")
-    fun getSpotById(spotId: String): Flow<TouristSpot>
-
+    fun getSpotById(spotId: String): Flow<TouristSpot?>
     @Insert(onConflict = OnConflictStrategy.IGNORE) // Ignora si ya es favorito
     suspend fun addFavorite(favorite: Favorite)
 

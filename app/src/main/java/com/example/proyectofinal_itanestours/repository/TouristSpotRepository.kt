@@ -19,7 +19,7 @@ class TouristSpotRepository(
         return database.touristSpotDao().getSpotsByTour(tourId)
     }
 
-    fun getSpotById(spotId: String): Flow<TouristSpot> {
+    fun getSpotById(spotId: String): Flow<TouristSpot?> { // <-- Añade el '?' aquí
         return database.touristSpotDao().getSpotById(spotId)
     }
 
