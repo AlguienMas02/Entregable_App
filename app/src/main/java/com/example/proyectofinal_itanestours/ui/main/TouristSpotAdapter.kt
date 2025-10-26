@@ -2,20 +2,13 @@ package com.example.proyectofinal_itanestours.ui.main
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.widget.CheckBox
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.proyectofinal_itanestours.database.TouristSpot
-import com.example.proyectofinal_itanestours.databinding.ListItemSpotBinding // <-- Importante: esto se genera automáticamente
+import com.example.proyectofinal_itanestours.databinding.ListItemSpotBinding
 
-/**
- * Adaptador para el RecyclerView que muestra la lista de puntos turísticos.
- *
- * @param onFavoriteClicked Lambda que se invoca cuando el usuario pulsa el botón de favorito.
- * @param onItemClicked Lambda que se invoca cuando el usuario pulsa en cualquier parte de la tarjeta.
- */
 class TouristSpotAdapter(
     private val onFavoriteClicked: (TouristSpot, Boolean) -> Unit,
     private val onItemClicked: (TouristSpot) -> Unit
@@ -26,42 +19,28 @@ class TouristSpotAdapter(
      */
     inner class SpotViewHolder(private val binding: ListItemSpotBinding) : RecyclerView.ViewHolder(binding.root) {
 
-        // Vincula los datos del 'spot' a las vistas del layout
         fun bind(spot: TouristSpot, isFavorite: Boolean) {
-            // 1. Asignar textos
             binding.textSpotName.text = spot.name
             binding.textSpotDescription.text = spot.description
 
-            // 2. Cargar imagen con Glide
-            Glide.with(binding.imageSpot.context) // Obtenemos el contexto desde la vista
-                .load(spot.photoUrl) // La URL de la imagen
-                .into(binding.imageSpot) // Dónde cargarla
+            Glide.with(binding.imageSpot.context)
+                .load(spot.photoUrl)
+                .into(binding.imageSpot)
 
-            // 3. Establecer el estado del botón de favorito
-            // Quitamos el listener temporalmente para que no se dispare al setear
             binding.buttonFavorite.setOnCheckedChangeListener(null)
             binding.buttonFavorite.isChecked = isFavorite
 
-            // 4. Asignar los listeners (clicks)
-
-            // Click en el ítem completo
             binding.root.setOnClickListener {
                 onItemClicked(spot)
             }
 
-            // Click en el botón de favorito
             binding.buttonFavorite.setOnCheckedChangeListener { _, isChecked ->
                 onFavoriteClicked(spot, isChecked)
             }
         }
     }
 
-    /**
-     * Crea un nuevo ViewHolder (llama a esto cuando el RecyclerView necesita
-     * una nueva "fila" de la lista).
-     */
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SpotViewHolder {
-        // "Infla" (crea) el layout XML y lo prepara para el ViewHolder
         val binding = ListItemSpotBinding.inflate(
             LayoutInflater.from(parent.context),
             parent,
@@ -70,19 +49,14 @@ class TouristSpotAdapter(
         return SpotViewHolder(binding)
     }
 
-    /**
-     * Vincula los datos de un ítem a un ViewHolder (llama a esto para
-     * rellenar una fila con datos).
-     */
+    // --- ESTA ES LA FUNCIÓN CORREGIDA ---
     override fun onBindViewHolder(holder: SpotViewHolder, position: Int) {
         val spot = getItem(position)
-
-        // --- Lógica para saber si este ítem es favorito ---
+        // Obtenemos el estado de favorito usando la lista de IDs
         val isFavorite = favoriteIds.contains(spot.spotId)
         holder.bind(spot, isFavorite)
     }
 
-    // --- Necesitamos una forma de pasar la lista de favoritos al Adapter ---
     private var favoriteIds = emptySet<String>()
 
     fun setFavorites(ids: Set<String>) {
@@ -92,20 +66,14 @@ class TouristSpotAdapter(
         notifyDataSetChanged()
     }
 
+    // --- HE ELIMINADO LA OTRA onBindViewHolder(..., payloads) PORQUE NO ERA NECESARIA ---
 
-
-    /**
-     * DiffUtil: Le dice al Adapter cómo calcular las diferencias
-     * entre la lista vieja y la nueva.
-     */
     companion object SpotDiffCallback : DiffUtil.ItemCallback<TouristSpot>() {
         override fun areItemsTheSame(oldItem: TouristSpot, newItem: TouristSpot): Boolean {
-            // Comprueba si los ítems son el mismo (por ID)
             return oldItem.spotId == newItem.spotId
         }
 
         override fun areContentsTheSame(oldItem: TouristSpot, newItem: TouristSpot): Boolean {
-            // Comprueba si el contenido del ítem ha cambiado (ej. nombre, foto)
             return oldItem == newItem
         }
     }
