@@ -3,31 +3,33 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/tourListFragment">
-
-    <fragment
-        android:id="@+id/tourListFragment"
-        android:name="com.example.proyectofinal_itanestours.ui.main.TourListFragment"
-        android:label="Itanes Tours"
-        tools:layout="@layout/fragment_tour_list" >
-
-        <action
-            android:id="@+id/action_tourListFragment_to_spotDetailFragment"
-            app:destination="@id/spotDetailFragment" />
-
-    </fragment>
+    app:startDestination="@id/tourListFragment"> <fragment
+    android:id="@+id/tourListFragment"
+    android:name="com.example.proyectofinal_itanestours.ui.main.TourListFragment"
+    android:label="Lugares" tools:layout="@layout/fragment_tour_list" >
+    <action
+        android:id="@+id/action_tourListFragment_to_spotDetailFragment"
+        app:destination="@id/spotDetailFragment" />
+</fragment>
 
     <fragment
         android:id="@+id/spotDetailFragment"
         android:name="com.example.proyectofinal_itanestours.ui.detail.SpotDetailFragment"
-        android:label="fragment_spot_detail"
+        android:label="Detalle del Lugar"
         tools:layout="@layout/fragment_spot_detail" >
-
-        <!-- THIS IS THE CRUCIAL PART -->
         <argument
             android:name="spotId"
-            app:argType="string"/>
+            app:argType="string" />
     </fragment>
 
+    <fragment
+        android:id="@+id/favoritesFragment"
+        android:name="com.example.proyectofinal_itanestours.ui.favorites.FavoritesFragment"
+        android:label="Favoritos"
+        tools:layout="@layout/fragment_favorites" >
+        <action
+            android:id="@+id/action_favoritesFragment_to_spotDetailFragment"
+            app:destination="@id/spotDetailFragment" />
+    </fragment>
 
 </navigation>

@@ -9,57 +9,63 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOn
 
 // Definimos un estado para la UI, que contendrá la lista de spots
 // y la información de cuáles son favoritos.
-data class UiState(
+data class SpotsUiState( // <-- Renombramos de UiState a SpotsUiState
     val spots: List<TouristSpot> = emptyList(),
     val favoriteSpotIds: Set<String> = emptySet()
 )
 
 class MainViewModel(private val repository: TouristSpotRepository) : ViewModel() {
 
-    // --- ID del Tour que estamos viendo ---
-    private val tourId = "lima_centro"
+    private val tourId = "lima_centro" // O el ID que estés usando
 
-    // --- Flujo de datos desde el Repositorio ---
-    // Obtenemos el Flow de los Puntos Turísticos
-    private val spotsFlow = repository.getSpotsByTour(tourId).flowOn(Dispatchers.IO)
-    // Obtenemos el Flow de los IDs Favoritos
-    private val favoritesFlow = repository.getFavoriteSpotIds().flowOn(Dispatchers.IO)
+    // Flujo de TODOS los Puntos Turísticos para el tour actual
+    private val allSpotsFlow = repository.getSpotsByTour(tourId).flowOn(Dispatchers.IO)
+
+    // Flujo de los IDs Favoritos
+    private val favoriteIdsFlow = repository.getFavoriteSpotIds().flowOn(Dispatchers.IO)
+
     /**
-     * Exponemos el estado de la UI (UiState).
-     * Usamos 'combine' para mezclar los datos de spotsFlow y favoritesFlow.
-     * Cada vez que cualquiera de los dos cambie, se emitirá un nuevo UiState.
+     * StateFlow para la pantalla principal (TourListFragment).
+     * Combina todos los spots con los IDs favoritos.
      */
-    val uiState: StateFlow<UiState> = combine(spotsFlow, favoritesFlow) { spots, favIds ->
-        UiState(spots, favIds.toSet())
-    }.stateIn( // Convertimos el Flow en un StateFlow
+    val uiState: StateFlow<SpotsUiState> = combine(allSpotsFlow, favoriteIdsFlow) { spots, favIds ->
+        SpotsUiState(spots, favIds.toSet())
+    }.stateIn(
         scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000), // Mantiene el flow activo 5s
-        initialValue = UiState() // Valor inicial mientras carga
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = SpotsUiState()
     )
 
-    // --- Acciones del Usuario ---
-
     /**
-     * Llama al Repositorio para que actualice los datos desde la API.
-     * Se debe llamar al iniciar la app o en un "pull-to-refresh".
+     * StateFlow NUEVO para la pantalla de Favoritos (FavoritesFragment).
+     * Filtra la lista de 'allSpotsFlow' usando 'favoriteIdsFlow'.
      */
+    val favoritesUiState: StateFlow<SpotsUiState> = combine(allSpotsFlow, favoriteIdsFlow) { spots, favIds ->
+        val favoriteSpots = spots.filter { spot -> favIds.contains(spot.spotId) }
+        SpotsUiState(favoriteSpots, favIds.toSet()) // Pasamos los spots filtrados y el set completo de IDs
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = SpotsUiState() // Estado inicial vacío
+    )
+
+
     fun refreshData() {
-        viewModelScope.launch(Dispatchers.IO) { // <-- Añade (Dispatchers.IO) aquí
+        viewModelScope.launch(Dispatchers.IO) {
             repository.refreshSpots()
         }
     }
 
-    /**
-     * Marca o desmarca un punto como favorito.
-     */
     fun toggleFavorite(spotId: String) {
-        viewModelScope.launch(Dispatchers.IO) { // <-- Añade (Dispatchers.IO) aquí
+        viewModelScope.launch(Dispatchers.IO) {
+            // Usamos el Set del uiState principal para saber el estado actual
             if (uiState.value.favoriteSpotIds.contains(spotId)) {
                 repository.removeFavorite(spotId)
             } else {
