@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "ProyectoFinal-ItanesTours"
+rootProject.name = "Proyecto App KFC"
 include(":app")
